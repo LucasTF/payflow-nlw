@@ -8,7 +8,6 @@ import 'package:payflow/modules/barcode_scanner/barcode_scanner_status.dart';
 class BarcodeScannerController {
   final statusNotifier =
       ValueNotifier<BarcodeScannerStatus>(BarcodeScannerStatus());
-
   BarcodeScannerStatus get status => statusNotifier.value;
   set status(BarcodeScannerStatus status) => statusNotifier.value = status;
 
@@ -23,11 +22,8 @@ class BarcodeScannerController {
       final response = await availableCameras();
       final camera = response.firstWhere(
           (element) => element.lensDirection == CameraLensDirection.back);
-      cameraController = CameraController(
-        camera,
-        ResolutionPreset.max,
-        enableAudio: false,
-      );
+      cameraController =
+          CameraController(camera, ResolutionPreset.max, enableAudio: false);
       await cameraController!.initialize();
       scanWithCamera();
       listenCamera();
@@ -39,7 +35,6 @@ class BarcodeScannerController {
   Future<void> scannerBarCode(InputImage inputImage) async {
     try {
       final barcodes = await barcodeScanner.processImage(inputImage);
-
       var barcode;
       for (Barcode item in barcodes) {
         barcode = item.value.displayValue;
@@ -57,19 +52,18 @@ class BarcodeScannerController {
     }
   }
 
-  void scanWithCamera() {
-    status = BarcodeScannerStatus.available();
-    Future.delayed(Duration(seconds: 20)).then((value) {
-      if (status.hasBarcode == false) {
-        status = BarcodeScannerStatus.error("Timeout de leitura de boleto");
-      }
-    });
-  }
-
   void scanWithImagePicker() async {
     final response = await ImagePicker().getImage(source: ImageSource.gallery);
     final inputImage = InputImage.fromFilePath(response!.path);
     scannerBarCode(inputImage);
+  }
+
+  void scanWithCamera() {
+    status = BarcodeScannerStatus.available();
+    Future.delayed(Duration(seconds: 20)).then((value) {
+      if (status.hasBarcode == false)
+        status = BarcodeScannerStatus.error("Timeout de leitura de boleto");
+    });
   }
 
   void listenCamera() {
@@ -107,6 +101,7 @@ class BarcodeScannerController {
             );
             final inputImageCamera = InputImage.fromBytes(
                 bytes: bytes, inputImageData: inputImageData);
+
             scannerBarCode(inputImageCamera);
           } catch (e) {
             print(e);
